@@ -13,27 +13,17 @@ const ConfluenceContents: React.FC<ConfluenceContentsProps> = ({ url }) => {
       if (iframe) {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
         if (iframeDoc) {
-          // 원하는 영역을 숨기거나 제거하는 함수
           const adjustContent = () => {
-            // 탐색기 영역을 완전히 제거
-            const explorer = iframeDoc.querySelector('.explorer-class-name') as HTMLElement;
-            if (explorer) {
-              explorer.remove();
-            }
-
-            // 전체 페이지에서 content 영역을 제외한 다른 요소 숨기기
+            // content 영역을 찾고 복사
             const contentArea = iframeDoc.querySelector('.content-class-name') as HTMLElement;
             if (contentArea) {
-              contentArea.style.width = '100%'; // 전체 너비로 확장
-              // 부모 요소들 중 필요 없는 요소를 제거하거나 숨기기
-              const parentElements = contentArea.parentElement?.children;
-              if (parentElements) {
-                Array.from(parentElements).forEach((elem) => {
-                  if (elem !== contentArea) {
-                    (elem as HTMLElement).style.display = 'none';
-                  }
-                });
-              }
+              const clonedContent = contentArea.cloneNode(true) as HTMLElement;
+              clonedContent.style.width = '100%';
+              clonedContent.style.height = '100%';
+
+              // iframe의 body를 비우고 복사한 contentArea를 추가
+              iframeDoc.body.innerHTML = '';
+              iframeDoc.body.appendChild(clonedContent);
             }
           };
           adjustContent();
