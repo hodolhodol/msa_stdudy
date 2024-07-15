@@ -8,43 +8,44 @@ const ConfluenceContents: React.FC<ConfluenceContentsProps> = ({ url }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+    const handleIframeLoad = () => {
+      const iframe = iframeRef.current;
+      if (iframe) {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          const adjustContent = () => {
+            // content 영역을 찾고 복사
+            const contentArea = iframeDoc.querySelector('.wiki-content') as HTMLElement;
+            if (contentArea) {
+              const clonedContent = contentArea.cloneNode(true) as HTMLElement;
+              clonedContent.style.width = '100%';
+              clonedContent.style.height = '100%';
 
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) return;
+              // iframe의 body를 비우고 복사한 contentArea를 추가
+              iframeDoc.body.innerHTML = '';
+              iframeDoc.body.appendChild(clonedContent);
 
-    // 처음에는 iframe 내의 모든 요소를 숨김
-    const hideAllElements = () => {
-      const allElements = iframeDoc.body.querySelectorAll('*');
-      allElements.forEach((elem) => {
-        (elem as HTMLElement).style.display = 'none';
-      });
-    };
-
-    // content 영역을 찾고 보여주기
-    const showContentArea = () => {
-      const contentArea = iframeDoc.querySelector('.page.view') as HTMLElement;
-      if (contentArea) {
-        contentArea.style.display = 'block'; // content 영역만 보이도록
+              // 스타일 시트를 복사
+              const styles = iframeDoc.querySelectorAll('style, link[rel="stylesheet"]');
+              styles.forEach(style => {
+                iframeDoc.head.appendChild(style.cloneNode(true));
+              });
+            }
+          };
+          adjustContent();
+        }
       }
     };
 
-    // iframe이 로드될 때 실행할 함수
-    const handleIframeLoad = () => {
-      hideAllElements(); // 모든 요소 숨기기
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener('load', handleIframeLoad);
+    }
 
-      setTimeout(() => {
-        showContentArea(); // 일정 시간 후에 content 영역 보이기
-      }, 1000); // 1초 후에 content 영역 보이기 (1000ms = 1초)
-    };
-
-    // iframe의 load 이벤트 리스너 추가
-    iframe.addEventListener('load', handleIframeLoad);
-
-    // 컴포넌트가 언마운트될 때 load 이벤트 리스너 제거
     return () => {
-      iframe.removeEventListener('load', handleIframeLoad);
+      if (iframe) {
+        iframe.removeEventListener('load', handleIframeLoad);
+      }
     };
   }, [url]);
 
