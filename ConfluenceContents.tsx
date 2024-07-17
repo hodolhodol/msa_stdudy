@@ -59,3 +59,7 @@ const ConfluenceContents: React.FC<ConfluenceContentsProps> = ({ url }) => {
 };
 
 export default ConfluenceContents;
+
+/*
+Refused to apply style from 'https://xxxx/_next/static/css/81aea823ad47b2b4.css' because its MIME type ('text/plain') is not a supported stylesheet MIME type, and strict MIME checking is enabled.
+*/
